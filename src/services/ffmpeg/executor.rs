@@ -22,7 +22,7 @@ use std::process::Stdio;
 use log::info;
 use tokio::process::Command;
 
-use super::error::{FFmpegError, FFmpegResult};
+use super::error::{FFmpegServiceError, FFmpegServiceResult};
 use super::task::{FFmpegStatus, FFmpegTask, FFmpegTaskParameters};
 
 /// 一個標準執行器 (Executor)。
@@ -49,7 +49,7 @@ pub struct FFmpegExecutor<'a> {
 
 impl<'a> Executor for FFmpegExecutor<'a> {
     type TaskParameter = FFmpegTaskParameters<'a>;
-    type Task = FFmpegResult<FFmpegTask>;
+    type Task = FFmpegServiceResult<FFmpegTask>;
 
     fn executor(&self, param: &Self::TaskParameter) -> Self::Task {
         let mut command = Command::new(self.executable);
@@ -83,7 +83,7 @@ impl<'a> Executor for FFmpegExecutor<'a> {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-            .map_err(|err| FFmpegError::SpawnFFmpegFailed(err, command_str))?;
+            .map_err(|err| FFmpegServiceError::SpawnFFmpegFailed(err, command_str))?;
 
         Ok(FFmpegTask {
             status: FFmpegStatus::Running,

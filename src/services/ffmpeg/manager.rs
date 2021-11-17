@@ -7,12 +7,12 @@ use std::collections::HashMap;
 
 use log::trace;
 
-use crate::services::ffmpeg::error::FFmpegError::{FFmpegKillFailed, TryWaitFailed};
+use crate::services::ffmpeg::error::FFmpegServiceError::{FFmpegKillFailed, TryWaitFailed};
 use crate::services::ffmpeg::executor::{Executor, FFmpegExecutor};
 use crate::services::ffmpeg::task::FFmpegStatus::Interrupted;
 use crate::services::ffmpeg::task::{FFmpegStatus, FFmpegTaskParameters};
 
-use super::error::FFmpegResult;
+use super::error::FFmpegServiceResult;
 use super::task::FFmpegTask;
 
 /// FFmpeg 處理程序管理結構體。
@@ -38,7 +38,7 @@ impl<'a> FFmpegManager<'a> {
     /// `param` 是要傳入 Executor 的參數。
     ///
     /// 若已經註冊過同名稱的 `ident`，則會取消並覆蓋原先存在的作業。
-    pub fn add_task(&mut self, ident: String, param: TaskParameter) -> FFmpegResult<()> {
+    pub fn add_task(&mut self, ident: String, param: TaskParameter) -> FFmpegServiceResult<()> {
         trace!("adding {ident} to FFmpegManager...", ident = ident);
         self.tasks.insert(ident, self.executor.executor(&param)?);
         Ok(())
@@ -50,7 +50,7 @@ impl<'a> FFmpegManager<'a> {
     ///
     /// 若作業存在，則回傳 `Some(FFmpegTask {...})`；
     /// 反之，回傳 `None`。
-    pub fn retrieve_task(&mut self, ident: &str) -> FFmpegResult<Option<&mut FFmpegTask>> {
+    pub fn retrieve_task(&mut self, ident: &str) -> FFmpegServiceResult<Option<&mut FFmpegTask>> {
         trace!("retrieving {ident} from FFmpegManager...", ident = ident);
         let mut task = self.tasks.get_mut(ident);
 
@@ -69,7 +69,7 @@ impl<'a> FFmpegManager<'a> {
     /// 若作業存在，則回傳 `Some(FFmpegTask {...})`，
     /// 其中 `FFmpegTask` 是已經從內部 `tasks` 刪除的作業；
     /// 若作業不存在，則回傳 `None`。
-    pub async fn abort_task(&mut self, ident: &str) -> FFmpegResult<Option<FFmpegTask>> {
+    pub async fn abort_task(&mut self, ident: &str) -> FFmpegServiceResult<Option<FFmpegTask>> {
         let mut task = self.tasks.remove(ident);
 
         if let Some(ref mut task) = task {
@@ -89,7 +89,7 @@ impl<'a> FFmpegManager<'a> {
 type TaskParameter = FFmpegTaskParameters<'static>;
 
 /// 更新作業的狀態。
-fn update_status(task: &mut FFmpegTask) -> FFmpegResult<()> {
+fn update_status(task: &mut FFmpegTask) -> FFmpegServiceResult<()> {
     // Set the status to "Determining" to prevent the asynchronous
     // because of the following early return.
     task.status = FFmpegStatus::Determining;

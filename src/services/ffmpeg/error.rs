@@ -6,7 +6,7 @@ use thiserror::Error;
 
 /// FFmpeg 相關函式的錯誤。
 #[derive(Error, Debug)]
-pub enum FFmpegError {
+pub enum FFmpegServiceError {
     /// 無法啟動 FFmpeg 處理程序。
     ///
     /// * {0} - [`tokio::process::Command::output`] 所拋出的錯誤。
@@ -38,4 +38,4 @@ pub enum FFmpegError {
 }
 
 /// FFmpeg 相關函式的回傳類型。
-pub type FFmpegResult<T> = Result<T, FFmpegError>;
+pub type FFmpegServiceResult<T> = Result<T, FFmpegServiceError>;
