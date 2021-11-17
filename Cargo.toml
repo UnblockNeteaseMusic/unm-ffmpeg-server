@@ -6,9 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix = "~0.12.0"
 actix-web = { version = "^4.0.0-beta.10", features = ["rustls"] }
-awc = { version = "^3.0.0-beta.9", features = ["default", "rustls"] }
+awc = { version = "^3.0.0-beta.9", features = ["rustls"] }
 futures-util = "~0.3.17"
 http = "~0.2.5"
 log = "~0.4.14"
