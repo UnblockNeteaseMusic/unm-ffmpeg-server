@@ -1,7 +1,11 @@
 [package]
 name = "unm-ffmpeg-server"
+description = "UNM FFmpeg 轉碼伺服器"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/UnblockNeteaseMusic/unm-ffmpeg-server"
+readme = "README.md"
+license = "GPL-3.0-or-later"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
