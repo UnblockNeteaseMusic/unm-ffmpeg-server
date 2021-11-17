@@ -1,4 +1,5 @@
 //! 以 awc 為基礎的用戶端工具服務。
+use std::fs::File;
 use std::io::Write;
 
 use awc::error::{PayloadError, SendRequestError};
@@ -7,8 +8,6 @@ use futures_util::{FutureExt, StreamExt};
 use http::Uri;
 use log::{debug, trace};
 use thiserror::Error;
-
-use crate::types::Output;
 
 /// 從指定 URL 取得資源。
 ///
@@ -25,7 +24,7 @@ pub async fn get_resource(client: &Client, uri: &Uri) -> SendClientRequest {
 /// - output: 要輸出的位置。
 pub async fn write_chunks_to_file(
     request: &mut SendClientRequest,
-    output: &mut Output,
+    output: &mut File,
 ) -> ClientServiceResult<()> {
     /* Get stream of <request> body */
     trace!("transforming the request to stream");
@@ -34,13 +33,10 @@ pub async fn write_chunks_to_file(
         response.body().into_stream()
     };
 
-    /* Get the File reference of <output> */
-    let file = output.get_file_mut();
-
     trace!("writing the chunk in stream to the file");
     while let Some(chunk) = stream.next().await {
         let chunk = chunk?;
-        file.write_all(&chunk)?;
+        output.write_all(&chunk)?;
     }
 
     Ok(())
@@ -98,13 +94,15 @@ mod tests {
 
         let write_chunk_way = {
             let mut buf = String::new();
-            let mut output = Output(tempfile::tempfile().unwrap());
+            let mut file = tempfile::tempfile().unwrap();
             let mut resp = get_resource(&client, &uri).await;
-            write_chunks_to_file(&mut resp, &mut output).await.unwrap();
+            write_chunks_to_file(&mut resp, &mut file).await.unwrap();
 
-            let f = output.get_file_mut();
-            f.seek(SeekFrom::Start(0)).unwrap();
-            f.read_to_string(&mut buf).unwrap();
+            {
+                let f = &mut file;
+                f.seek(SeekFrom::Start(0)).unwrap();
+                f.read_to_string(&mut buf).unwrap();
+            }
 
             buf
         };
